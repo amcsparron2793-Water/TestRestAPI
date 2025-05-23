@@ -4,6 +4,7 @@ from flask import Flask, request as flask_request, jsonify as flask_jsonify
 import random
 app = Flask(__name__)
 GENERATED_API_KEY_LENGTH = 16
+ENDPOINT = '/get_api_key'
 
 
 def build_key():
@@ -31,7 +32,7 @@ def validate_credentials(data):
 
 
 # noinspection GrazieInspection
-@app.route('/get_api_key', methods=['POST'])
+@app.route(ENDPOINT, methods=['POST'])
 def get_api_key():
     """
     The `get_api_key` function is a route handler function that handles the HTTP POST request to the endpoint '/get_api_key'.
