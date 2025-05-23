@@ -1,6 +1,6 @@
 import string
 
-from flask import Flask, request, jsonify
+from flask import Flask, request as flask_request, jsonify as flask_jsonify
 import random
 app = Flask(__name__)
 GENERATED_API_KEY_LENGTH = 16
@@ -26,7 +26,7 @@ def validate_credentials(data):
 
     # Check if username and password are provided
     if not username or not password:
-        return jsonify({'error': 'Username and password required'}), 400
+        return flask_jsonify({'error': 'Username and password required'}), 400
     return None
 
 
@@ -55,7 +55,7 @@ def get_api_key():
 
         Output: '1234567890abcdef'
     """
-    data = request.get_json()
+    data = flask_request.get_json()
     validation_error = validate_credentials(data)
 
     if validation_error:
@@ -65,7 +65,7 @@ def get_api_key():
     # fake_api_key = '1234567890abcdef'
     fake_api_key = build_key()
 
-    return jsonify({'api_key': fake_api_key}), 200
+    return flask_jsonify({'api_key': fake_api_key}), 200
 
 
 if __name__ == '__main__':
