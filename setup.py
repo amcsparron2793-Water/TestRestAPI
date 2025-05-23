@@ -12,6 +12,9 @@ setup(
     name=project_name,
     version=get_property('__version__', project_name),
     packages=['TestRestAPI'],
+    extras_require={
+        "dev": ["pytest"]
+    },
     url='https://github.com/amcsparron2793/TestRestAPI',
     download_url=f'https://github.com/amcsparron2793/TestRestAPI/archive/refs/tags/{get_property("__version__", project_name)}.tar.gz',
     keywords=[],
