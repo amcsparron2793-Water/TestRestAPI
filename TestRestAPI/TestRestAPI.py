@@ -3,6 +3,8 @@ import string
 from flask import Flask, request, jsonify
 import random
 app = Flask(__name__)
+GENERATED_API_KEY_LENGTH = 16
+
 
 def build_key():
     """
@@ -11,12 +13,24 @@ def build_key():
     :return: The generated fake API key.
     """
     fake_api_key = str(random.randint(1234567890, 9999999999))
-    while len(fake_api_key) < 16:
+    while len(fake_api_key) < GENERATED_API_KEY_LENGTH:
         letter_part = random.choice(string.ascii_lowercase)
         fake_api_key += letter_part
     return fake_api_key
 
 
+def validate_credentials(data):
+    # Extract username and password from the request
+    username = data.get('username')
+    password = data.get('password')
+
+    # Check if username and password are provided
+    if not username or not password:
+        return jsonify({'error': 'Username and password required'}), 400
+    return None
+
+
+# noinspection GrazieInspection
 @app.route('/get_api_key', methods=['POST'])
 def get_api_key():
     """
@@ -42,14 +56,10 @@ def get_api_key():
         Output: '1234567890abcdef'
     """
     data = request.get_json()
+    validation_error = validate_credentials(data)
 
-    # Extract username and password from the request
-    username = data.get('username')
-    password = data.get('password')
-
-    # Check if username and password are provided
-    if not username or not password:
-        return jsonify({'error': 'Username and password required'}), 400
+    if validation_error:
+        return validation_error
 
     # For the purpose of this mock, we accept any username/password and return a fake API key
     # fake_api_key = '1234567890abcdef'
