@@ -1,0 +1,27 @@
+POST http://127.0.0.1:5000/get_api_key
+Content-Type: application/json
+
+{
+    "username": "Test",
+    "password": "test"
+}
+###
+
+
+
+POST http://127.0.0.1:5000/test_api_key
+Content-Type: application/json
+
+{
+    "api_key": "5892506618ztyani"
+}
+###
+
+
+POST http://127.0.0.1:5000/test_api_key
+Content-Type: application/json
+
+{
+    "api_key": "58yani"
+}
+###
