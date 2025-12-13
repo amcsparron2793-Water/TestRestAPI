@@ -69,5 +69,39 @@ def get_api_key():
     return flask_jsonify({'api_key': fake_api_key}), 200
 
 
+@app.route('/test_api_key', methods=['POST'])
+def test_api_key():
+    """
+    Validates an API key passed via request.
+
+    Accepts the API key from (checked in this order):
+    - "X-API-Key" header
+    - "Authorization" header with "Bearer <token>"
+    - JSON body field: {"api_key": "..."}
+
+    Returns 200 with a success message if valid, otherwise 400 with an error.
+    """
+    # Try headers first
+    api_key = request.headers.get('X-API-Key')
+
+    if not api_key:
+        auth_hdr = request.headers.get('Authorization', '')
+        if auth_hdr.lower().startswith('bearer '):
+            api_key = auth_hdr.split(' ', 1)[1].strip()
+
+    # Fallback to JSON body
+    if not api_key:
+        body = request.get_json(silent=True) or {}
+        api_key = body.get('api_key')
+
+    if not api_key:
+        return jsonify({'error': 'API key required'}), 400
+
+    if not validate_api_key(api_key):
+        return jsonify({'error': 'Invalid API key format'}), 400
+
+    return jsonify({'message': 'API key is valid'}), 200
+
+
 if __name__ == '__main__':
     app.run(debug=True)
