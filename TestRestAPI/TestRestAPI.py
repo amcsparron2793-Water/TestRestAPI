@@ -1,8 +1,11 @@
 import string
 
-from flask import Flask, request, jsonify
+from flask import Flask, request as flask_request, jsonify as flask_jsonify
 import random
 app = Flask(__name__)
+GENERATED_API_KEY_LENGTH = 16
+ENDPOINT = '/get_api_key'
+
 
 def build_key():
     """
@@ -11,31 +14,25 @@ def build_key():
     :return: The generated fake API key.
     """
     fake_api_key = str(random.randint(1234567890, 9999999999))
-    while len(fake_api_key) < 16:
+    while len(fake_api_key) < GENERATED_API_KEY_LENGTH:
         letter_part = random.choice(string.ascii_lowercase)
         fake_api_key += letter_part
     return fake_api_key
 
 
-def validate_api_key(api_key: str) -> bool:
-    """
-    Validates the provided API key.
+def validate_credentials(data):
+    # Extract username and password from the request
+    username = data.get('username')
+    password = data.get('password')
 
-    Rules (kept intentionally simple to match the fake key generator):
-    - Must be non-empty
-    - Must be at least 16 characters long
-    - Must be alphanumeric (digits and letters only)
-    """
-    if not api_key:
-        return False
-    if len(api_key) < 16:
-        return False
-    if not api_key.isalnum():
-        return False
-    return True
+    # Check if username and password are provided
+    if not username or not password:
+        return flask_jsonify({'error': 'Username and password required'}), 400
+    return None
 
 
-@app.route('/get_api_key', methods=['POST'])
+# noinspection GrazieInspection
+@app.route(ENDPOINT, methods=['POST'])
 def get_api_key():
     """
     The `get_api_key` function is a route handler function that handles the HTTP POST request to the endpoint '/get_api_key'.
@@ -59,21 +56,17 @@ def get_api_key():
 
         Output: '1234567890abcdef'
     """
-    data = request.get_json()
+    data = flask_request.get_json()
+    validation_error = validate_credentials(data)
 
-    # Extract username and password from the request
-    username = data.get('username')
-    password = data.get('password')
-
-    # Check if username and password are provided
-    if not username or not password:
-        return jsonify({'error': 'Username and password required'}), 400
+    if validation_error:
+        return validation_error
 
     # For the purpose of this mock, we accept any username/password and return a fake API key
     # fake_api_key = '1234567890abcdef'
     fake_api_key = build_key()
 
-    return jsonify({'api_key': fake_api_key}), 200
+    return flask_jsonify({'api_key': fake_api_key}), 200
 
 
 @app.route('/test_api_key', methods=['POST'])
