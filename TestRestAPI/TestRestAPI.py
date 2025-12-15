@@ -6,6 +6,23 @@ app = Flask(__name__)
 GENERATED_API_KEY_LENGTH = 16
 ENDPOINT = '/get_api_key'
 
+def validate_api_key(api_key: str) -> bool:
+    """
+    Validates the provided API key.
+
+    Rules (kept intentionally simple to match the fake key generator):
+    - Must be non-empty
+    - Must be at least 16 characters long
+    - Must be alphanumeric (digits and letters only)
+    """
+    if not api_key:
+        return False
+    if len(api_key) < 16:
+        return False
+    if not api_key.isalnum():
+        return False
+    return True
+
 
 def build_key():
     """
@@ -72,7 +89,7 @@ def get_api_key():
 @app.route('/test_api_key', methods=['POST'])
 def test_api_key():
     """
-    Validates an API key passed via request.
+    Validates an API key passed via flask_request.
 
     Accepts the API key from (checked in this order):
     - "X-API-Key" header
@@ -82,25 +99,25 @@ def test_api_key():
     Returns 200 with a success message if valid, otherwise 400 with an error.
     """
     # Try headers first
-    api_key = request.headers.get('X-API-Key')
+    api_key = flask_request.headers.get('X-API-Key')
 
     if not api_key:
-        auth_hdr = request.headers.get('Authorization', '')
+        auth_hdr = flask_request.headers.get('Authorization', '')
         if auth_hdr.lower().startswith('bearer '):
             api_key = auth_hdr.split(' ', 1)[1].strip()
 
     # Fallback to JSON body
     if not api_key:
-        body = request.get_json(silent=True) or {}
+        body = flask_request.get_json(silent=True) or {}
         api_key = body.get('api_key')
 
     if not api_key:
-        return jsonify({'error': 'API key required'}), 400
+        return flask_jsonify({'error': 'API key required'}), 400
 
     if not validate_api_key(api_key):
-        return jsonify({'error': 'Invalid API key format'}), 400
+        return flask_jsonify({'error': 'Invalid API key format'}), 400
 
-    return jsonify({'message': 'API key is valid'}), 200
+    return flask_jsonify({'message': 'API key is valid'}), 200
 
 
 if __name__ == '__main__':
